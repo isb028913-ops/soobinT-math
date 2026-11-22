@@ -175,5 +175,5 @@ registerActivity('g1-int-add', {
 
 - [x] 메인, 학년·단원, 활동 공통 틀, 결과, 교사용 화면 (2026-11-22, 활동 없음)
 - [x] 깃허브 페이지 배포 (2026-11-22): 저장소 `isb028913-ops/soobinT-math`(공개), 주소 https://isb028913-ops.github.io/soobinT-math/ . 수정 후 반영은 커밋하고 `git push` (교사 요청 시).
-- [ ] 교사가 `설치안내.md` 1~3단계(구글 시트·앱스 스크립트) 연결 → `js/config.js`의 API_URL 채우기
+- [x] 구글 시트·앱스 스크립트 연결 (2026-11-22). API_URL 설정 완료. Code.gs를 고치면 교사가 Apps Script에 다시 붙여 넣고 "배포 관리 → 새 버전"으로 배포해야 한다.
 - [ ] 첫 활동 요청 받기
