@@ -193,7 +193,7 @@
       const q = qs[i];
       let ok, shown, acc;
       if (q.type === 'choice') { ok = v === q.answer; shown = `${NUMS[v]} ${plain(q.choices[v])}`; }
-      else if (q.type === 'point') { acc = PointBoard.accuracy(q, v); ok = acc >= 90; shown = `정확도 ${acc}점`; }
+      else if (q.type === 'point') { acc = PointBoard.accuracy(q, v); ok = acc >= 90; shown = `정확도 ${acc.toFixed(1)}점`; }
       else { ok = [].concat(q.answer).some(a => norm(a) === norm(v)); shown = v; }
       rec.push({ n: i + 1, correct: ok, answer: shown, pos: q.type === 'point' ? v : undefined, acc });
       if (!immediate) return next();
@@ -207,9 +207,12 @@
       const last = i === qs.length - 1;
       let fb;
       if (q.type === 'point') {
-        document.getElementById('ans').innerHTML = PointBoard.svg(q, { bell: v, reveal: true }) + PointBoard.LEGEND;
+        // 놓은 종과 세 친구까지의 거리를 그린다. 정답(점 O)은 q.reveal이 true일 때만.
+        const ansEl = document.getElementById('ans');
+        ansEl.innerHTML = PointBoard.svg(q, { bell: v, dist: true, reveal: !!q.reveal }) + (q.reveal ? PointBoard.LEGEND : '');
+        if (ok && c.celebrate) PointBoard.celebrate(ansEl, q, v);
         fb = `<div class="fb ${ok ? 'ok' : 'ng'}"><span class="mark">${ok ? '○' : '✕'}</span>
-                ${ok ? '공평해요!' : '아쉬워요.'} 정확도 ${acc}점</div>
+                ${ok ? '공평해요!' : '아쉬워요.'} 정확도 ${acc.toFixed(1)}점</div>
               ${q.explain ? `<div class="explain">${q.explain}</div>` : ''}`;
       } else {
         fb = ok ? '<div class="fb ok"><span class="mark">○</span> 정답이에요!</div>'
@@ -229,23 +232,26 @@
   function showResult(meta, c, name, rec) {
     const correct = rec.filter(r => r.correct).length, total = rec.length;
     const wrong = rec.filter(r => !r.correct);
+    const avg = rec.some(r => r.acc != null) ? Math.round(rec.reduce((s, r) => s + (r.acc || 0), 0) / total * 10) / 10 : null; // 소수 첫째 자리
     body(meta, `
       <div class="result">
         <p class="who">${esc(name)}</p>
         <h1>${esc(meta.title)}</h1>
-        <div class="score"><span class="num">${correct}</span> / ${total}</div>
-        ${rec.some(r => r.acc != null)
-          ? `<p class="send">평균 정확도 <b>${Math.round(rec.reduce((s, r) => s + (r.acc || 0), 0) / total)}점</b></p>` : ''}
+        ${avg == null
+          ? `<div class="score"><span class="num">${correct}</span> / ${total}</div>`
+          : `<p class="send">${total}판 평균 점수</p>
+             <div class="score"><span class="num">${avg.toFixed(1)}</span>점</div>
+             <p class="send">성공 ○ ${correct} / ${total}판</p>`}
         <div id="sendStatus" class="send">결과를 보내는 중…</div>
-        ${wrong.length ? `<h2>틀린 문제 다시 보기</h2>` + wrong.map(r => {
+        ${wrong.length ? `<h2>${avg != null ? '아쉬운 판 다시 보기 (90점 미만)' : '틀린 문제 다시 보기'}</h2>` + wrong.map(r => {
           const q = c.questions[r.n - 1];
           return `
             <div class="review">
               <div class="rv-head"><span class="mark ng">✕</span> ${r.n}번</div>
-              ${q.type === 'point' ? PointBoard.svg(q, { bell: r.pos, reveal: true, small: true })
+              ${q.type === 'point' ? PointBoard.svg(q, { bell: r.pos, dist: true, reveal: !!q.reveal, small: true })
                                    : `<div class="q-prompt small">${q.prompt}</div>`}
-              <p>내 답: ${esc(r.answer)}</p>
-              <p>정답: ${correctText(q)}</p>
+              <p>${q.type === 'point' ? '' : '내 답: '}${esc(r.answer)}</p>
+              ${q.type === 'point' && !q.reveal ? '' : `<p>정답: ${correctText(q)}</p>`}
               ${q.explain ? `<div class="explain"><b>풀이</b> ${q.explain}</div>` : ''}
             </div>`;
         }).join('') : '<p class="perfect"><span class="mark ok">○</span> 모두 맞혔어요!</p>'}
@@ -257,7 +263,8 @@
     document.getElementById('again').onclick = () => showIntro(meta, c);
     submit({
       action: 'submit', name, grade: meta.grade, unit: meta.unit,
-      activityId: meta.id, title: meta.title, correct, total, items: rec
+      activityId: meta.id, title: meta.title, correct, total, items: rec,
+      rankScore: c.ranking && avg != null ? avg : undefined
     });
   }
 
@@ -267,7 +274,8 @@
     for (let t = 0; t < 3; t++) {
       try {
         const d = await api(payload);
-        if (el()) el().innerHTML = `<span class="mark ok">○</span> 결과를 선생님께 보냈어요. (${d.attempt}번째 시도)`;
+        if (el()) el().innerHTML = `<span class="mark ok">○</span> 결과를 선생님께 보냈어요. (${d.attempt}번째 시도)` +
+          (d.rank ? `<div class="rank-badge">반 랭킹 <b>${d.rank}위</b> / ${d.count}명</div>` : '');
         return;
       } catch (e) {
         err = e;

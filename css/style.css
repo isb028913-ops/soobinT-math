@@ -136,6 +136,15 @@ button, input, select { font: inherit; color: inherit; }
 .howto { background: var(--well); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 24px; }
 .howto h2 { font-size: 1em; }
 .howto ul { margin: 0; padding-left: 1.2em; }
+.howto-row { display: flex; gap: 16px; align-items: center; }
+.howto-row ul { flex: 1; }
+.howto-ex { margin: 0; flex: 0 0 46%; max-width: 320px; }
+.howto-ex .pboard { cursor: default; }
+.howto-ex figcaption { color: var(--sub); font-size: .8em; text-align: center; margin-top: 4px; }
+@media (max-width: 640px) {
+  .howto-row { flex-direction: column; align-items: stretch; }
+  .howto-ex { max-width: 340px; margin: 0 auto; }
+}
 .field-label { display: block; font-weight: 700; margin-bottom: 6px; }
 .text-input {
   width: 100%; min-height: 56px; padding: 10px 14px;
@@ -249,13 +258,18 @@ tbody tr:hover { background: var(--well); }
 .pb-bg { fill: #fbfaf5; }
 .pb-grid { stroke: #e7e8e3; stroke-width: .25; }
 .pb-tri { fill: rgba(141, 148, 154, .08); stroke: var(--edge); stroke-width: .4; stroke-dasharray: 1.2 1; }
-.pb-player { fill: var(--ink); }
+.pb-face { stroke: var(--ink); stroke-width: .35; }
+.pb-tail { stroke: var(--ink); stroke-width: .35; }
+.pb-tie { fill: #e05d8a; }
+.pb-bell text { transform-box: fill-box; transform-origin: 50% 10%; }
+.pb-card rect { fill: #fff; stroke: var(--ink); stroke-width: .35; }
+.pb-card text { font-size: 3.4px; }
+.pb-eye { fill: var(--ink); }
+.pb-smile { fill: none; stroke: var(--ink); stroke-width: .35; stroke-linecap: round; }
 .pb-label { font: 700 3.8px var(--font); fill: var(--ink); }
 .pb-bell circle { fill: var(--g1); stroke: var(--ink); stroke-width: .4; }
 .pb-bell text { font-size: 4px; }
-.pb-circle { fill: none; stroke: var(--g2); stroke-width: .5; stroke-dasharray: 1.6 1; }
-.pb-bisector { stroke: var(--focus); stroke-width: .35; opacity: .75; }
-.pb-mid { fill: var(--focus); }
+.pb-oline { stroke: var(--g2); stroke-width: .45; stroke-dasharray: 1.4 .9; }
 .pb-o { fill: var(--g2); }
 .pb-olabel { font: 700 3.6px var(--font); fill: var(--g2); }
 .pb-reach { stroke: var(--sub); stroke-width: .3; }
@@ -263,7 +277,7 @@ tbody tr:hover { background: var(--well); }
 .pb-help { color: var(--sub); text-align: center; margin: 8px 0 12px; font-size: .9em; }
 .pb-legend { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--sub); font-size: .8em; }
 .pb-legend li { display: flex; align-items: center; gap: 6px; }
-.sw.line.bis { border-color: var(--focus); }
+.sw.line.reach { border-color: var(--sub); }
 .sw.line.circ { border-color: var(--g2); border-top-style: dashed; }
 .sw.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--g2); }
 .quiz .explain { margin-bottom: 14px; }
@@ -308,6 +322,8 @@ tbody tr:hover { background: var(--well); }
 .sw.line.median { border-color: var(--g2); border-top-style: dashed; }
 .rank tbody tr { cursor: default; }
 .rank tr.top { background: var(--g1-soft); font-weight: 700; }
+.board .rank { font-size: 1.1em; }
+.rank-badge { display: inline-block; margin-top: 10px; padding: 6px 16px; border-radius: var(--radius); background: var(--g1-soft); border: 1px solid var(--g1); color: var(--ink); font-size: 1.1em; }
 
 /* ---------- 좁은 화면 ---------- */
 @media (max-width: 560px) {

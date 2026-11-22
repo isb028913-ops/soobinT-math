@@ -149,6 +149,7 @@
             </div>
             <div class="link-btns">
               ${a.kind === 'mean-game' ? `<button class="btn primary" data-board="${esc(a.id)}">게임 진행</button>` : ''}
+              ${a.ranking ? `<button class="btn primary" data-board="${esc(a.id)}">랭킹 보기</button>` : ''}
               <button class="btn" data-copy="${esc(linkOf(a))}">링크 복사</button>
               <button class="btn" data-qr="${esc(a.id)}">QR 크게 보기</button>
             </div>

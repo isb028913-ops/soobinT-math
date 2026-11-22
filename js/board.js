@@ -116,6 +116,21 @@
   window.openBoard = function (opt) {
     const { app, password, activity: a, link } = opt;
     let state = null, err = '', timer = null, lastText = '', busy = false, alive = true;
+    const rankMode = !!a.ranking; // 점수 랭킹 (예: 공평한 종 자리 찾기)
+
+    function rankTable(entries) {
+      if (!entries.length) return '<div class="panel"><p class="empty">아직 기록이 없어요. 학생이 5판을 끝까지 하면 여기에 올라와요.</p></div>';
+      const sorted = entries.slice().sort((x, y) => y.value - x.value || x.name.localeCompare(y.name, 'ko'));
+      let rank = 0;
+      return `
+        <div class="panel"><div class="table-wrap"><table class="rank">
+          <thead><tr><th>순위</th><th>이름</th><th>평균 점수</th></tr></thead>
+          <tbody>${sorted.map((e, k) => {
+            if (k === 0 || e.value !== sorted[k - 1].value) rank = k + 1;
+            return `<tr class="${rank <= 3 ? 'top' : ''}"><td>${rank}</td><td>${esc(e.name)}</td><td>${Number(e.value).toFixed(1)}점</td></tr>`;
+          }).join('')}</tbody>
+        </table></div></div>`;
+    }
 
     function qrSVG() {
       if (!window.qrcode) return '';
@@ -141,6 +156,16 @@
               <div class="qr-url">${esc(link)}</div>
             </div>
           </div>
+          ${rankMode ? `
+          <div class="panel">
+            <div class="board-status">
+              <b>${state ? state.round : '-'}번째 판 랭킹</b>
+              <span>참여 <b>${entries.length}</b>명 · 5판 평균 점수 (여러 번 하면 가장 높은 점수)</span>
+            </div>
+            <div class="t-actions"><button class="btn" id="bReset">새 판 시작</button></div>
+            <p class="hint" role="alert">${esc(err)}</p>
+          </div>
+          ${rankTable(entries)}` : `
           <div class="panel">
             <div class="board-status">
               <b>${state ? state.round : '-'}번째 판</b>
@@ -153,7 +178,7 @@
             </div>
             <p class="hint" role="alert">${esc(err)}</p>
           </div>
-          ${state && state.phase === 'revealed' && entries.length ? resultHTML(entries) : ''}
+          ${state && state.phase === 'revealed' && entries.length ? resultHTML(entries) : ''}`}
         </section>`;
       document.getElementById('bBack').onclick = () => { alive = false; clearTimeout(timer); opt.onBack(); };
       const rv = document.getElementById('bReveal');
@@ -161,7 +186,7 @@
         if (await ask('결과를 공개할까요?\n공개한 뒤에는 학생이 더 이상 제출할 수 없어요.', { ok: '결과 공개' })) act('gameReveal');
       };
       document.getElementById('bReset').onclick = async () => {
-        if (await ask('새 판을 시작할까요?\n지금 판의 응답은 순위 계산에서 빠져요. (교사용 결과 목록에는 그대로 남아요)', { ok: '새 판 시작' })) act('gameReset');
+        if (await ask(`새 판을 시작할까요?\n지금 판의 ${rankMode ? '랭킹은 비워져요' : '응답은 순위 계산에서 빠져요'}. (교사용 결과 목록에는 그대로 남아요)`, { ok: '새 판 시작' })) act('gameReset');
       };
     }
 
@@ -174,7 +199,7 @@
     async function act(action) {
       if (busy) return;
       busy = true; err = '';
-      try { apply(await api({ action, password, activityId: a.id })); lastText = ''; draw(); }
+      try { apply(await api({ action, password, activityId: a.id, best: rankMode })); lastText = ''; draw(); }
       catch (e) { err = errorText(e); draw(); }
       busy = false;
       poll();
@@ -184,7 +209,7 @@
       clearTimeout(timer);
       if (!alive) return;
       try {
-        const d = await api({ action: 'gameState', password, activityId: a.id });
+        const d = await api({ action: 'gameState', password, activityId: a.id, best: rankMode });
         if (!alive) return;
         if (err) { err = ''; lastText = ''; }
         apply(d);

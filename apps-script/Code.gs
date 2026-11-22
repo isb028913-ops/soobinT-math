@@ -119,8 +119,21 @@ function submit_(req) {
   const items = (Array.isArray(req.items) ? req.items.slice(0, 200) : []).map(function (it) {
     return { n: Number(it.n), correct: !!it.correct, answer: text_(it.answer, 100) };
   });
+  const hasRank = req.rankScore != null;
+  const rankScore = Number(req.rankScore);
+  if (hasRank && !(rankScore >= 0 && rankScore <= 100)) throw new Error('BAD_DATA');
   return withLock_(function () {
-    return { attempt: appendResult_(c, req, correct, total, items) };
+    const out = { attempt: appendResult_(c, req, correct, total, items) };
+    // 랭킹 활동: 현재 판에 점수를 기록하고 순위를 돌려준다 (같은 이름은 가장 높은 점수).
+    if (hasRank) {
+      const info = gameInfo_(c.activityId);
+      appendRow_(gameSheet_(), [now_(), c.activityId, info.round, c.name, Math.round(rankScore * 10) / 10]); // 소수 첫째 자리
+      const entries = gameEntries_(c.activityId, info.round, true);
+      const mine = entries.filter(function (e) { return e.name === c.name; })[0].value;
+      out.rank = 1 + entries.filter(function (e) { return e.value > mine; }).length;
+      out.count = entries.length;
+    }
+    return out;
   });
 }
 
@@ -146,14 +159,16 @@ function gameSubmit_(req) {
   });
 }
 
-// 현재 판의 응답 (같은 이름은 마지막에 낸 수만)
-function gameEntries_(id, round) {
+// 현재 판의 응답. 같은 이름은 마지막에 낸 수만 (best면 가장 큰 수)
+function gameEntries_(id, round, best) {
   const sh = gameSheet_();
   const last = sh.getLastRow();
   const byName = {};
   if (last > 1) {
     sh.getRange(2, 1, last - 1, GAME_HEADERS.length).getValues().forEach(function (r) {
-      if (String(r[1]) === id && Number(r[2]) === round) byName[String(r[3])] = Number(r[4]);
+      if (String(r[1]) !== id || Number(r[2]) !== round) return;
+      const name = String(r[3]), v = Number(r[4]);
+      if (!best || !(name in byName) || v > byName[name]) byName[name] = v;
     });
   }
   return Object.keys(byName).map(function (name) { return { name: name, value: byName[name] }; });
@@ -162,7 +177,7 @@ function gameEntries_(id, round) {
 function gameState_(req) {
   const id = text_(req.activityId, 60);
   const info = gameInfo_(id);
-  return { round: info.round, phase: info.phase, entries: gameEntries_(id, info.round) };
+  return { round: info.round, phase: info.phase, entries: gameEntries_(id, info.round, !!req.best) };
 }
 
 function gameReveal_(req) {
