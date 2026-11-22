@@ -268,27 +268,28 @@
   // ---------- 삭제 ----------
   async function removeActivity(title) {
     const n = rows.filter(r => r.activityId === f.act).length;
-    if (!confirm(`'${title}' 결과 ${n}건을 모두 삭제할까요?\n삭제하면 되돌릴 수 없어요.`)) return;
+    if (!await ask(`'${title}' 결과 ${n}건을 모두 삭제할까요?\n삭제하면 되돌릴 수 없어요.`, { ok: '삭제', danger: true })) return;
     await doDelete({ scope: 'activity', activityId: f.act });
   }
   async function removeAll() {
-    const typed = prompt(`저장된 결과 ${rows.length}건을 모두 삭제합니다. 되돌릴 수 없어요.\n계속하려면 '전체삭제'라고 입력하세요.`);
-    if (typed !== '전체삭제') return;
+    if (!await ask(`저장된 결과 ${rows.length}건을 모두 삭제합니다. 되돌릴 수 없어요.\n계속하려면 아래에 '전체삭제'라고 입력하세요.`,
+                   { ok: '전체 삭제', danger: true, typeWord: '전체삭제' })) return;
     await doDelete({ scope: 'all' });
   }
+  const notice = msg => ask(msg, { cancel: false });
   async function doDelete(opt) {
     try {
       const d = await api(Object.assign({ action: 'delete', password: pw }, opt));
-      alert(`${d.deleted}건을 삭제했어요.`);
       await refresh();
-    } catch (err) { alert(errorText(err)); }
+      notice(`${d.deleted}건을 삭제했어요.`);
+    } catch (err) { notice(errorText(err)); }
   }
 
   async function refresh() {
     try { await load(); render(); }
     catch (err) {
       if (err.message === 'WRONG_PASSWORD') { pw = ''; login(errorText(err)); }
-      else alert(errorText(err));
+      else notice(errorText(err));
     }
   }
 

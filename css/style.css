@@ -53,6 +53,8 @@ button, input, select { font: inherit; color: inherit; }
 .btn.primary { background: var(--ink); border-color: var(--ink); color: #fff; }
 .btn.primary:hover { background: #353a3f; }
 .btn.danger { color: var(--ng); border-color: #e7b3ae; }
+.btn.danger-fill { background: var(--ng); border-color: var(--ng); color: #fff; }
+.ask-msg { font-size: 1.1em; margin: 0 0 14px; }
 .btn.big { min-height: 60px; font-size: 1.05em; width: 100%; }
 .btn:disabled { opacity: .45; cursor: default; }
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }

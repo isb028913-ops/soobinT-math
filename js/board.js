@@ -157,11 +157,11 @@
         </section>`;
       document.getElementById('bBack').onclick = () => { alive = false; clearTimeout(timer); opt.onBack(); };
       const rv = document.getElementById('bReveal');
-      if (rv) rv.onclick = () => {
-        if (confirm('결과를 공개할까요? 공개한 뒤에는 학생이 더 이상 제출할 수 없어요.')) act('gameReveal');
+      if (rv) rv.onclick = async () => {
+        if (await ask('결과를 공개할까요?\n공개한 뒤에는 학생이 더 이상 제출할 수 없어요.', { ok: '결과 공개' })) act('gameReveal');
       };
-      document.getElementById('bReset').onclick = () => {
-        if (confirm('새 판을 시작할까요? 지금 판의 응답은 순위 계산에서 빠져요.\n(교사용 결과 목록에는 그대로 남아요)')) act('gameReset');
+      document.getElementById('bReset').onclick = async () => {
+        if (await ask('새 판을 시작할까요?\n지금 판의 응답은 순위 계산에서 빠져요. (교사용 결과 목록에는 그대로 남아요)', { ok: '새 판 시작' })) act('gameReset');
       };
     }
 

@@ -34,6 +34,40 @@ window.ERROR_TEXT = {
   CLOSED: '결과가 이미 공개됐어요. 선생님이 새 판을 시작하면 다시 낼 수 있어요.',
   EMPTY: '아직 제출한 학생이 없어요.'
 };
+// 페이지 안 확인 창. 브라우저 기본 confirm/alert는 일부 환경(앱 안 브라우저 등)에서 뜨지 않아 직접 만든다.
+// opt: { ok: '버튼 글자', danger: true, cancel: false(취소 버튼 없음), typeWord: '입력해야 할 낱말' }
+window.ask = function (message, opt) {
+  opt = opt || {};
+  return new Promise(resolve => {
+    const ov = document.createElement('div');
+    ov.className = 'overlay';
+    ov.innerHTML = `
+      <div class="modal" role="dialog" aria-modal="true">
+        <p class="ask-msg">${esc(message).replace(/\n/g, '<br>')}</p>
+        ${opt.typeWord ? `<input class="text-input" id="askIn" autocomplete="off" placeholder="${esc(opt.typeWord)}">
+                          <p class="hint" id="askHint"></p>` : ''}
+        <div class="t-actions">
+          ${opt.cancel === false ? '' : '<button class="btn" id="askNo">취소</button>'}
+          <button class="btn ${opt.danger ? 'danger-fill' : 'primary'}" id="askYes">${esc(opt.ok || '확인')}</button>
+        </div>
+      </div>`;
+    document.body.appendChild(ov);
+    const done = v => { ov.remove(); resolve(v); };
+    const input = ov.querySelector('#askIn');
+    ov.querySelector('#askYes').onclick = () => {
+      if (input && input.value.trim() !== opt.typeWord) {
+        ov.querySelector('#askHint').textContent = `'${opt.typeWord}'라고 정확히 입력해 주세요.`;
+        return input.focus();
+      }
+      done(true);
+    };
+    const no = ov.querySelector('#askNo');
+    if (no) no.onclick = () => done(false);
+    ov.onclick = e => { if (e.target === ov) done(false); };
+    (input || ov.querySelector('#askYes')).focus();
+  });
+};
+
 window.errorText = function (e) {
   return ERROR_TEXT[e && e.message] || '연결에 실패했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.';
 };
