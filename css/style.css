@@ -323,6 +323,7 @@ tbody tr:hover { background: var(--well); }
 .rank tbody tr { cursor: default; }
 .rank tr.top { background: var(--g1-soft); font-weight: 700; }
 .board .rank { font-size: 1.1em; }
+.rank-rest { margin: 10px 0 0; }
 .rank-badge { display: inline-block; margin-top: 10px; padding: 6px 16px; border-radius: var(--radius); background: var(--g1-soft); border: 1px solid var(--g1); color: var(--ink); font-size: 1.1em; }
 
 /* ---------- 좁은 화면 ---------- */

@@ -121,15 +121,22 @@
     function rankTable(entries) {
       if (!entries.length) return '<div class="panel"><p class="empty">아직 기록이 없어요. 학생이 5판을 끝까지 하면 여기에 올라와요.</p></div>';
       const sorted = entries.slice().sort((x, y) => y.value - x.value || x.name.localeCompare(y.name, 'ko'));
+      // 순위를 매기고 상위 10위까지만 보여 준다 (10위 동점자는 모두 포함)
       let rank = 0;
+      const ranked = sorted.map((e, k) => {
+        if (k === 0 || e.value !== sorted[k - 1].value) rank = k + 1;
+        return Object.assign({ rank }, e);
+      });
+      const top = ranked.filter(e => e.rank <= 10);
+      const rest = ranked.length - top.length;
       return `
         <div class="panel"><div class="table-wrap"><table class="rank">
           <thead><tr><th>순위</th><th>이름</th><th>평균 점수</th></tr></thead>
-          <tbody>${sorted.map((e, k) => {
-            if (k === 0 || e.value !== sorted[k - 1].value) rank = k + 1;
-            return `<tr class="${rank <= 3 ? 'top' : ''}"><td>${rank}</td><td>${esc(e.name)}</td><td>${Number(e.value).toFixed(1)}점</td></tr>`;
-          }).join('')}</tbody>
-        </table></div></div>`;
+          <tbody>${top.map(e =>
+            `<tr class="${e.rank <= 3 ? 'top' : ''}"><td>${e.rank}</td><td>${esc(e.name)}</td><td>${Number(e.value).toFixed(1)}점</td></tr>`).join('')}
+          </tbody>
+        </table></div>
+        ${rest > 0 ? `<p class="summary rank-rest">상위 10위까지 보여 줘요. 그 밖에 ${rest}명이 참여했어요.</p>` : ''}</div>`;
     }
 
     function qrSVG() {
@@ -160,7 +167,7 @@
           <div class="panel">
             <div class="board-status">
               <b>${state ? state.round : '-'}번째 판 랭킹</b>
-              <span>참여 <b>${entries.length}</b>명 · 5판 평균 점수 (여러 번 하면 가장 높은 점수)</span>
+              <span>참여 <b>${entries.length}</b>명 · 5판 평균 점수 상위 10명 (여러 번 하면 가장 높은 점수)</span>
             </div>
             <div class="t-actions"><button class="btn" id="bReset">새 판 시작</button></div>
             <p class="hint" role="alert">${esc(err)}</p>
