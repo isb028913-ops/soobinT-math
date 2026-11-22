@@ -10,4 +10,7 @@ window.ACTIVITIES = [
   { id: 'g1-mean-game', code: '1101', title: '대푯값 퀴즈: 평균에 가장 가까운 수는?', grade: 1,
     unit: '자료의 정리와 해석', type: '게임', kind: 'mean-game',
     desc: '반 전체가 1~100 중 수를 내고, 평균에 가장 가까운 사람이 이겨요', visible: true, added: '2026-11-22' },
+  { id: 'g2-fair-bell', code: '2061', title: '공평한 종 자리 찾기', grade: 2,
+    unit: '삼각형의 성질', type: '게임',
+    desc: '세 친구에게서 똑같은 거리에 종을 놓아요 (외심 찾기 6판)', visible: true, added: '2026-11-22' },
 ];

@@ -243,6 +243,31 @@ tbody tr:hover { background: var(--well); }
 .qr-code b { letter-spacing: .15em; font-size: 1.3em; }
 .qr-url { color: var(--sub); font-size: .85em; word-break: break-all; }
 
+/* ---------- 점 놓기 판 (외심 찾기 등) ---------- */
+.pboard { width: 100%; height: auto; display: block; touch-action: none; user-select: none; border: 1px solid var(--edge); border-radius: var(--radius); cursor: crosshair; }
+.pboard.small { max-width: 420px; margin: 8px 0; cursor: default; }
+.pb-bg { fill: #fbfaf5; }
+.pb-grid { stroke: #e7e8e3; stroke-width: .25; }
+.pb-tri { fill: rgba(141, 148, 154, .08); stroke: var(--edge); stroke-width: .4; stroke-dasharray: 1.2 1; }
+.pb-player { fill: var(--ink); }
+.pb-label { font: 700 3.8px var(--font); fill: var(--ink); }
+.pb-bell circle { fill: var(--g1); stroke: var(--ink); stroke-width: .4; }
+.pb-bell text { font-size: 4px; }
+.pb-circle { fill: none; stroke: var(--g2); stroke-width: .5; stroke-dasharray: 1.6 1; }
+.pb-bisector { stroke: var(--focus); stroke-width: .35; opacity: .75; }
+.pb-mid { fill: var(--focus); }
+.pb-o { fill: var(--g2); }
+.pb-olabel { font: 700 3.6px var(--font); fill: var(--g2); }
+.pb-reach { stroke: var(--sub); stroke-width: .3; }
+.pb-dist { font: 700 2.8px var(--font); fill: var(--ink); paint-order: stroke; stroke: #fbfaf5; stroke-width: .8; }
+.pb-help { color: var(--sub); text-align: center; margin: 8px 0 12px; font-size: .9em; }
+.pb-legend { list-style: none; padding: 0; margin: 8px 0 0; display: flex; flex-wrap: wrap; gap: 4px 16px; color: var(--sub); font-size: .8em; }
+.pb-legend li { display: flex; align-items: center; gap: 6px; }
+.sw.line.bis { border-color: var(--focus); }
+.sw.line.circ { border-color: var(--g2); border-top-style: dashed; }
+.sw.dot { width: 10px; height: 10px; border-radius: 50%; background: var(--g2); }
+.quiz .explain { margin-bottom: 14px; }
+
 /* ---------- 게임 진행 화면 ---------- */
 .board { font-size: 18px; }
 .join { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }

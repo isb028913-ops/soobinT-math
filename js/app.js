@@ -106,6 +106,7 @@
   }
 
   function showIntro(meta, c) {
+    if (c.generate) c.questions = c.generate(); // 할 때마다 새 문제
     const howto = c.howto || `
       <ul>
         <li>한 화면에 한 문제씩 나와요.</li>
@@ -120,7 +121,7 @@
           <div><dt>단원</dt><dd>${esc(meta.unit)}</dd></div>
           ${c.kind === 'mean-game'
             ? '<div><dt>방식</dt><dd>반 전체 게임</dd></div>'
-            : `<div><dt>문항 수</dt><dd>${c.questions.length}문항</dd></div>`}
+            : `<div><dt>${c.countUnit === '판' ? '판 수' : '문항 수'}</dt><dd>${c.questions.length}${c.countUnit || '문항'}</dd></div>`}
         </dl>
         <div class="howto"><h2>하는 방법</h2>${howto}</div>
         <label class="field-label" for="nm">이름</label>
@@ -139,8 +140,8 @@
     nm.onkeydown = e => { if (e.key === 'Enter') start(); };
   }
 
-  const correctText = q => q.type === 'choice'
-    ? `${NUMS[q.answer]} ${q.choices[q.answer]}`
+  const correctText = q => q.type === 'choice' ? `${NUMS[q.answer]} ${q.choices[q.answer]}`
+    : q.type === 'point' ? (q.display || '점 O')
     : (q.display || esc([].concat(q.answer)[0]));
 
   function runQuiz(meta, c, name) {
@@ -164,6 +165,15 @@
         ans.innerHTML = `<div class="choices">${q.choices.map((ch, k) =>
           `<button class="choice" data-k="${k}"><span class="num">${NUMS[k]}</span><span>${ch}</span></button>`).join('')}</div>`;
         ans.querySelectorAll('.choice').forEach(b => b.onclick = () => answer(+b.dataset.k));
+      } else if (q.type === 'point') {
+        ans.innerHTML = `
+          <div id="pb">${PointBoard.svg(q, { interactive: true })}</div>
+          <p class="pb-help" id="pbHelp">판을 눌러 종을 놓고, 끌어서 옮겨 보세요.</p>
+          <button class="btn primary big" id="placeBtn" disabled>여기에 종 놓기</button>`;
+        let pos = null;
+        const pb = document.getElementById('placeBtn');
+        PointBoard.attach(document.getElementById('pb'), p => { pos = p; pb.disabled = false; });
+        pb.onclick = () => { if (pos) answer(pos); };
       } else {
         ans.innerHTML = `
           <form class="short" id="sf">
@@ -181,10 +191,11 @@
 
     function answer(v) {
       const q = qs[i];
-      let ok, shown;
+      let ok, shown, acc;
       if (q.type === 'choice') { ok = v === q.answer; shown = `${NUMS[v]} ${plain(q.choices[v])}`; }
+      else if (q.type === 'point') { acc = PointBoard.accuracy(q, v); ok = acc >= 90; shown = `정확도 ${acc}점`; }
       else { ok = [].concat(q.answer).some(a => norm(a) === norm(v)); shown = v; }
-      rec.push({ n: i + 1, correct: ok, answer: shown });
+      rec.push({ n: i + 1, correct: ok, answer: shown, pos: q.type === 'point' ? v : undefined, acc });
       if (!immediate) return next();
 
       document.querySelectorAll('#ans button, #ans input').forEach(el => el.disabled = true);
@@ -194,9 +205,17 @@
         if (!ok) btns[v].classList.add('is-wrong');
       }
       const last = i === qs.length - 1;
-      document.getElementById('fb').innerHTML = `
-        ${ok ? '<div class="fb ok"><span class="mark">○</span> 정답이에요!</div>'
-             : `<div class="fb ng"><span class="mark">✕</span> 틀렸어요. 정답: ${correctText(q)}</div>`}
+      let fb;
+      if (q.type === 'point') {
+        document.getElementById('ans').innerHTML = PointBoard.svg(q, { bell: v, reveal: true }) + PointBoard.LEGEND;
+        fb = `<div class="fb ${ok ? 'ok' : 'ng'}"><span class="mark">${ok ? '○' : '✕'}</span>
+                ${ok ? '공평해요!' : '아쉬워요.'} 정확도 ${acc}점</div>
+              ${q.explain ? `<div class="explain">${q.explain}</div>` : ''}`;
+      } else {
+        fb = ok ? '<div class="fb ok"><span class="mark">○</span> 정답이에요!</div>'
+                : `<div class="fb ng"><span class="mark">✕</span> 틀렸어요. 정답: ${correctText(q)}</div>`;
+      }
+      document.getElementById('fb').innerHTML = `${fb}
         <button class="btn primary big" id="nextBtn">${last ? '결과 보기' : '다음 문제'}</button>`;
       const nb = document.getElementById('nextBtn');
       nb.onclick = next; nb.focus();
@@ -215,13 +234,16 @@
         <p class="who">${esc(name)}</p>
         <h1>${esc(meta.title)}</h1>
         <div class="score"><span class="num">${correct}</span> / ${total}</div>
+        ${rec.some(r => r.acc != null)
+          ? `<p class="send">평균 정확도 <b>${Math.round(rec.reduce((s, r) => s + (r.acc || 0), 0) / total)}점</b></p>` : ''}
         <div id="sendStatus" class="send">결과를 보내는 중…</div>
         ${wrong.length ? `<h2>틀린 문제 다시 보기</h2>` + wrong.map(r => {
           const q = c.questions[r.n - 1];
           return `
             <div class="review">
               <div class="rv-head"><span class="mark ng">✕</span> ${r.n}번</div>
-              <div class="q-prompt small">${q.prompt}</div>
+              ${q.type === 'point' ? PointBoard.svg(q, { bell: r.pos, reveal: true, small: true })
+                                   : `<div class="q-prompt small">${q.prompt}</div>`}
               <p>내 답: ${esc(r.answer)}</p>
               <p>정답: ${correctText(q)}</p>
               ${q.explain ? `<div class="explain"><b>풀이</b> ${q.explain}</div>` : ''}

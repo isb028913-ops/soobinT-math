@@ -153,6 +153,12 @@ registerActivity('g1-int-add', {
 - prompt·choices·explain에는 HTML을 쓸 수 있다. 분수: `<span class="frac"><span>1</span><span>2</span></span>`, 문자: `<span class="math-var">x</span>`, 거듭제곱: `2<sup>3</sup>`.
 - 제한시간 등 새 방식이 필요하면 `js/app.js`의 `runQuiz`를 확장한다.
 
+### 점 놓기 문제 (type: 'point', `js/point.js`)
+
+- `{ type: 'point', prompt, players: [{x,y}×3], target: {x,y}, R, display, explain }`. 판은 100×75, 모눈 1칸 = 5.
+- 정확도 = 100 × (1 − 거리 / (0.8R)), 90점 이상이면 ○. 놓은 뒤 수직이등분선·외접원·외심 O·세 거리를 보여 준다.
+- 활동 파일에 `generate()`를 두면 할 때마다 새 문제를 만든다. `countUnit: '판'`이면 안내에 '6판'처럼 표시.
+
 ### 반 전체 게임 (kind: 'mean-game')
 
 - 메타에 `kind: 'mean-game'`, 활동 파일에 `{ kind, min, max, prompt, howto }`. 학생은 수 하나를 내고 "선생님 화면을 보세요"로 끝난다.
@@ -164,6 +170,7 @@ registerActivity('g1-int-add', {
 | 코드 | id | 학년·단원 | 제목 | 추가한 날 |
 | --- | --- | --- | --- | --- |
 | 1101 | g1-mean-game | 1 · 자료의 정리와 해석 | 대푯값 퀴즈: 평균에 가장 가까운 수는? (교사 제작 quiz.html을 옮김, 마스코트 그림은 뺌) | 2026-11-22 |
+| 2061 | g2-fair-bell | 2 · 삼각형의 성질 | 공평한 종 자리 찾기 (외심. 할로매쓰 '팥빙수' 게임 방식을 참고해 새로 만듦. 예각·직각·둔각 각 2판, 거리 힌트 없음, 90점 이상 ○) | 2026-11-22 |
 
 ## 추후 확장 후보 (지금은 만들지 않음)
 
